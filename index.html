@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portafolio de Angel Alejandro</title>
+  <style>
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* Animación del fondo con gradiente */
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    body {
+      background: linear-gradient(-45deg, #1e3c72, #2a5298, #0f2027, #203a43);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+
+    header {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      background: linear-gradient(to right, #ffda79, #ff6b6b, #ffd93d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #ffda79; }
+      to { text-shadow: 0 0 30px #ff6b6b, 0 0 50px #ffd93d; }
+    }
+
+    header p {
+      margin-top: 20px;
+      font-size: 1.3rem;
+      color: #ddd;
+      animation: fadeUp 2s ease-in-out;
+    }
+
+    @keyframes fadeUp {
+      0% { transform: translateY(50px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    section {
+      max-width: 900px;
+      margin: 60px auto;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+      transform: translateY(50px);
+      opacity: 0;
+      animation: fadeInUp 1.5s forwards;
+    }
+
+    section:nth-child(odd) {
+      animation-delay: 0.3s;
+    }
+    section:nth-child(even) {
+      animation-delay: 0.6s;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    section h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 2rem;
+      background: linear-gradient(to right, #ff9a9e, #fad0c4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    li {
+      background: rgba(255,255,255,0.1);
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 15px;
+      transition: transform 0.4s, background 0.4s;
+    }
+
+    li:hover {
+      transform: scale(1.08) rotate(-1deg);
+      background: rgba(255,255,255,0.2);
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      font-size: 0.9rem;
+      background: rgba(0,0,0,0.4);
+      margin-top: 60px;
+    }
+
+    /* Animación flotante */
+    .float {
+      animation: floating 4s ease-in-out infinite;
+    }
+
+    @keyframes floating {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="float">✨ Angel Alejandro Villon Panimboza ✨</h1>
+    <p>Estudiante de Ingeniería de Software | Programador inexperto| Ingeniero en Prompts  </p>
+  </header>
+
+  <section>
+    <h2>📚 Sobre mí</h2>
+    <p>
+      Soy un joven apasionado por la <strong>programación</strong>, la <strong>música</strong> 
+      y la <strong>creatividad</strong>. Nací el 2 de octubre de 2004, estudié Contabilidad Técnica
+      y actualmente curso <strong>Ingeniería de Software</strong>. Me gusta aprender, crear proyectos
+      y explorar nuevas áreas como edición de video, producción musical y desarrollo de videojuegos.
+    </p>
+  </section>
+
+  <section>
+    <h2>🎯 Objetivos</h2>
+    <ul>
+      <li>Convertirme en un programador de alto nivel.</li>
+      <li>Construir un portafolio sólido en programación, edición y música.</li>
+      <li>Crear mi propia red social: <strong>UBoxHouse</strong>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>💡 Intereses</h2>
+    <ul>
+      <li>🎵 Música: producción, mezcla y máster.</li>
+      <li>💻 Programación: Java, Python, C++, Qt, videojuegos.</li>
+      <li>🎬 Edición: Photoshop, Premiere, efectos visuales.</li>
+    </ul>
+  </section>
+
+  <footer>
+    © 2025 - Creado por Angel Alejandro 🚀
+  </footer>
+</body>
+</html>

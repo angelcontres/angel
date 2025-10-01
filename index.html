@@ -21,10 +21,10 @@
       📱 Exploración 3D (Giroscopio/Táctil)
     </button>
     <button class="menu-button" onclick="enterImmersiveMode()">
-      🕶️ Realidad Aumentada/Virtual (WebXR)
+      🕶️ Realidad Aumentada (Pokémon GO)
     </button>
     <p class="menu-note">
-      *El modo WebXR requiere un dispositivo móvil con soporte AR/VR.
+      *El modo AR requiere Chrome/Safari actualizados y permisos de cámara.
     </p>
   </div>
 
@@ -32,14 +32,14 @@
 
 
   <script>
-    // Referencia global para la escena (si necesitamos manipularla)
+    // Referencia global para la escena (esencial para la limpieza)
     let currentScene = null; 
 
     function loadScene(mode) {
       const menu = document.getElementById('menu-container');
       const sceneContainer = document.getElementById('scene-container');
       
-      // 1. Limpieza de escena anterior (Esencial para WebXR)
+      // 1. Limpieza de escena anterior (FUNDAMENTAL para la estabilidad móvil)
       if (currentScene) {
           currentScene.remove();
           currentScene = null;
@@ -55,18 +55,19 @@
       currentScene = scene; // Guardar la referencia
 
       // Atributos base 
-      scene.setAttribute('embedded', '');
+      // Si es AR, 'embedded' es 'false' (pantalla completa para la cámara).
+      scene.setAttribute('embedded', mode === 'ar' ? 'false' : 'true'); 
       scene.setAttribute('shadow', 'type: pcfsoft');
       scene.setAttribute('vr-mode-ui', 'enabled: true'); 
       scene.setAttribute('background', 'color: #1e3c72'); 
 
       let cameraControls = '';
-      let sceneContent = ''; // Contenido que se inyectará en la escena
+      let sceneContent = ''; 
 
       // 3. Configurar la Cámara y Controles
       if (mode === 'desktop') {
         cameraControls = 'look-controls wasd-controls';
-      } else if (mode === 'mobile') {
+      } else if (mode === 'mobile' || mode === 'ar') { 
         cameraControls = 'look-controls touch-controls';
       }
       
@@ -78,38 +79,33 @@
       
       // 4. Contenido de la escena 
       
-      // Definimos la estructura de los paneles (que es común a ambos modos)
+      // Estructura de los paneles con separación corregida (-2, 0, 2)
       const panelContent = `
-        <a-entity position="-1 1.7 0" rotation="0 35 0"
-                  info-panel="title: 📚 Sobre mí; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
-                  animation="property: position; to: -1 1.8 0; dir: alternate; loop: true; dur: 2500; easing: easeInOutQuad;"></a-entity>
+        <a-entity position="-2 1.7 0" rotation="0 35 0"
+                  info-panel="title: 📚 Sobre mi; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
+                  animation="property: position; to: -2 1.8 0; dir: alternate; loop: true; dur: 2500; easing: easeInOutQuad;"></a-entity>
 
         <a-entity position="0 1.7 0" rotation="0 0 0"
-                  info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio sólido.\\n• Crear UBoxHouse; color: #1e3c72"
+                  info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio solido.\\n• Crear UBoxHouse; color: #1e3c72"
                   animation="property: position; to: 0 1.9 0; dir: alternate; loop: true; dur: 2800; easing: easeInOutSine;"></a-entity>
 
-        <a-entity position="1 1.7 0" rotation="0 -35 0"
-                  info-panel="title: 💡 Intereses; content: • 🎵 Música: producción y máster\\n• 💻 Programación: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
-                  animation="property: position; to: 1 1.8 0; dir: alternate; loop: true; dur: 2600; easing: easeInOutQuad;"></a-entity>
+        <a-entity position="2 1.7 0" rotation="0 -35 0"
+                  info-panel="title: 💡 Intereses; content: • 🎵 Musica: producción y máster\\n• 💻 Programacion: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
+                  animation="property: position; to: 2 1.8 0; dir: alternate; loop: true; dur: 2600; easing: easeInOutQuad;"></a-entity>
       `;
 
       if (mode === 'ar') {
-        // --- MODO AR: Detección de Plano (Solo Paneles) ---
+        // --- MODO AR: Detección de Plano (Solo Paneles en WebXR) ---
         
-        // 🚨 CLAVE: La cámara ahora está fuera del contenido 3D, ya que la gestiona WebXR.
-        // Solo necesitamos la entidad de anclaje para los paneles.
-
         sceneContent = `
             ${cameraContent}
             
             <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
             
-            <a-entity webxr-ar-anchor="target: floor;"></a-entity>
-
             <a-entity webxr-ar-anchor="target: floor;">
                 ${panelContent.replace(/position="(-?\d+)\s+1.7\s+(-?\d+)"/g, (match, x, z) => `position="${x} 0.5 ${z}"`)}
                 
-                <a-text value="Busca una superficie plana para anclar los paneles"
+                <a-text value="Mueve el celular para detectar una superficie"
                     position="0 0.1 0"
                     align="center"
                     color="#FFD93D"
@@ -134,9 +130,9 @@
             <a-box position="8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
             <a-box position="0 4 0" depth="16" height="0.1" width="16" color="#55557a"></a-box>
 
-            ${panelContent.replace(/position="(-?\d+)\s+0.5\s+(-?\d+)"/g, (match, x, z) => `position="${x} 1.7 ${z}"`)}
+            ${panelContent}
             
-            <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.3 0.3 0.3" shadow="cast: true"
+            <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.1 0.1 0.1" shadow="cast: true"
                       animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
             <a-entity gltf-model="url(assets/laptop.glb)" position="4 0 -3" rotation="0 -20 0" scale="0.4 0.4 0.4" shadow="cast: true"
                       animation="property: rotation; to: 0 340 0; loop: true; dur: 14000; easing: linear;"></a-entity>
@@ -159,15 +155,22 @@
       });
     }
 
-    // Nueva función para el modo AR/VR (WebXR)
+    // Función que llama el botón de WebXR y activa la cámara
     function enterImmersiveMode() {
-        // Al darle al botón "WebXR", cargamos la escena en modo 'ar'
+        // 1. Cargamos la escena en modo 'ar' (solo paneles)
         loadScene('ar');
 
-        currentScene.addEventListener('loaded', () => {
-            // Entramos directamente en modo AR.
-            currentScene.enterAR(); 
-        });
+        // 2. 🚨 CLAVE: Esperamos un momento para asegurar que la escena esté lista
+        setTimeout(() => {
+            if (currentScene && currentScene.is('loaded')) {
+                // Forzamos el modo AR. Esto abre la cámara y activa la detección de plano.
+                currentScene.enterAR(); 
+            } else {
+                console.error('La escena no está lista para AR.');
+            }
+        }, 1000); // Esperamos 1 segundo
     }
 </script>
 
+</body>
+</html>

@@ -35,14 +35,20 @@
   <script>
     function loadScene(mode) {
       const menu = document.getElementById('menu-container');
-      const sceneContainer = document.getElementById('scene-container');
       
-      // 1. Ocultar y remover el menú
+      // 🚨 CLAVE 1: Limpiar y recrear el contenedor de la escena para asegurar
+      // que la instancia anterior de A-Frame (y AR.js si existía) se destruya por completo.
+      let sceneContainer = document.getElementById('scene-container');
+      if (sceneContainer) {
+          sceneContainer.remove();
+      }
+      sceneContainer = document.createElement('div');
+      sceneContainer.id = 'scene-container';
+      document.body.appendChild(sceneContainer);
+
+      // Ocultar el menú con una transición suave
       menu.classList.add('hidden');
       setTimeout(() => { menu.style.display = 'none'; }, 1000); 
-
-      // 🚨 CLAVE: Limpiar el contenedor antes de crear la nueva escena (Robustez)
-      sceneContainer.innerHTML = ''; 
 
       // 2. Crear el elemento <a-scene>
       const scene = document.createElement('a-scene');
@@ -54,39 +60,37 @@
       let cameraContent = '';
       let sceneContent = '';
 
-      // 3. Lógica de Modos (La clave para la cámara y AR)
+      // 3. Lógica de Modos (La corrección clave es aquí)
       if (mode === 'ar') {
         // --- MODO AR (Realidad Aumentada) ---
         
-        // 🚨 CLAVE: SÓLO añadimos 'arjs' si es Realidad Aumentada (pide cámara)
+        // SÓLO añadimos arjs si es AR
         scene.setAttribute('arjs', 'trackingMethod: best; sourceType: webcam; debugUIEnabled: false;');
         scene.removeAttribute('embedded'); 
         
-        cameraContent = '<a-entity camera></a-entity>';
-        
-        // El contenido 3D debe estar dentro de un <a-marker> en modo AR
+        // En AR, la escena 3D DEBE ir dentro de un <a-marker>
         sceneContent = `
             <a-marker preset="hiro">
-                <a-entity gltf-model="url(assets/guitarra.glb)" position="0 0 0" rotation="0 30 0" scale="0.5 0.5 0.5" shadow="cast: true"
+                <a-entity gltf-model="url(assets/guitarra.glb)" position="0 0 0" rotation="0 30 0" scale="0.3 0.3 0.3" shadow="cast: true"
                           animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
                           
                 <a-entity position="0 1 0" rotation="0 0 0"
                           info-panel="title: 💡 MODO AR; content: El modelo aparece sobre el marcador Hiro.; color: #ffd93d"></a-entity>
             </a-marker>
             
-            ${cameraContent}
+            <a-entity camera></a-entity>
         `;
         
       } else {
         // --- MODOS 3D NORMALES (Desktop y Móvil) ---
         
-        // Aseguramos que NO tiene arjs, y SÍ tiene embedded (no pide cámara)
+        // Aseguramos que NO tiene arjs, y SÍ tiene embedded
         scene.setAttribute('embedded', '');
         
-        // Ajuste de robustez: Color de fondo sólido de respaldo (el degradado está en styles.css)
+        // Ajuste de robustez: Color de fondo sólido de respaldo
         scene.setAttribute('background', 'color: #1e3c72');
-        
-        // 3. Configurar la Cámara y Controles
+
+        // 3. Configurar la Cámara
         if (mode === 'desktop') {
           // PC: Movimiento WASD + Ratón (look-controls)
           cameraContent = `
@@ -118,21 +122,22 @@
             <a-box position="0 4 0" depth="16" height="0.1" width="16" color="#55557a"></a-box>
 
             <a-entity position="-5 1.7 -5" rotation="0 35 0"
-                      info-panel="title: 📚 Sobre mi; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
+                      info-panel="title: 📚 Sobre mí; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
                       animation="property: position; to: -5 1.8 -5; dir: alternate; loop: true; dur: 2500; easing: easeInOutQuad;"></a-entity>
 
             <a-entity position="0 1.7 -4" rotation="0 0 0"
-                      info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio solido.\\n• Crear UBoxHouse; color: #1e3c72"
+                      info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio sólido.\\n• Crear UBoxHouse; color: #1e3c72"
                       animation="property: position; to: 0 1.9 -4; dir: alternate; loop: true; dur: 2800; easing: easeInOutSine;"></a-entity>
 
             <a-entity position="5 1.7 -5" rotation="0 -35 0"
-                      info-panel="title: 💡 Intereses; content: • 🎵 Musica: produccion y master\\n• 💻 Programación: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
+                      info-panel="title: 💡 Intereses; content: • 🎵 Música: producción y máster\\n• 💻 Programación: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
                       animation="property: position; to: 5 1.8 -5; dir: alternate; loop: true; dur: 2600; easing: easeInOutQuad;"></a-entity>
 
-            <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.1 0.1 0.1" shadow="cast: true"
+            <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.3 0.3 0.3" shadow="cast: true"
                       animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
-            <a-entity gltf-model="url(assets/laptop.glb)" position="4 0 -3" rotation="0 -20 0" scale="1 1 1" shadow="cast: true"
+            <a-entity gltf-model="url(assets/laptop.glb)" position="4 0 -3" rotation="0 -20 0" scale="0.4 0.4 0.4" shadow="cast: true"
                       animation="property: rotation; to: 0 340 0; loop: true; dur: 14000; easing: linear;"></a-entity>
+
             <a-text value="© 2025 - Creado por Angel Alejandro 🚀"
                     position="0 0.2 -2.5"
                     align="center"
@@ -144,8 +149,8 @@
       // 5. Inyectar el contenido y montar la escena
       scene.innerHTML = sceneContent;
       sceneContainer.appendChild(scene);
-      
-      // 🚨 CLAVE: Forzar la reproducción de la escena (soluciona pantalla en blanco)
+
+      // 🚨 CLAVE 2: Forzar la reproducción de la escena (siempre necesario para estabilidad)
       if (scene.hasLoaded) {
           scene.play();
       } else {
@@ -158,3 +163,4 @@
 
 </body>
 </html>
+

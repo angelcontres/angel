@@ -3,180 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portafolio de Angel Alejandro</title>
-  <style>
-    /* Reset básico */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+  <title>Portafolio 3D / AR - Angel Alejandro</title>
 
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #fff;
-      overflow-x: hidden;
-    }
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
-    /* Animación del fondo con gradiente */
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+  <script src="js/components.js"></script>
+  <link rel="stylesheet" href="css/styles.css"> 
+</head>
+<body style="margin:0; overflow:hidden;">
 
-    body {
-      background: linear-gradient(-45deg, #1e3c72, #2a5298, #0f2027, #203a43);
-      background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
-    }
+  <div id="menu-container">
+    <h1 class="menu-title">Elige tu Experiencia 🚀</h1>
+    <button class="menu-button" onclick="loadScene('desktop')">
+      💻 Exploración 3D (PC/Ratón)
+    </button>
+    <button class="menu-button" onclick="loadScene('mobile')">
+      📱 Exploración 3D (Giroscopio/Táctil)
+    </button>
+    <button class="menu-button" onclick="loadScene('ar')">
+      🖼️ Realidad Aumentada (AR)
+    </button>
+    <p class="menu-note">
+      *AR y Giroscopio requieren un dispositivo móvil.
+    </p>
+  </div>
 
-    header {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
+  <div id="scene-container"></div>
 
-    header h1 {
-      font-size: 3rem;
-      background: linear-gradient(to right, #ffda79, #ff6b6b, #ffd93d);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: glow 2s ease-in-out infinite alternate;
-    }
 
-    @keyframes glow {
-      from { text-shadow: 0 0 10px #ffda79; }
-      to { text-shadow: 0 0 30px #ff6b6b, 0 0 50px #ffd93d; }
-    }
+  <script>
+    function loadScene(mode) {
+      const menu = document.getElementById('menu-container');
+      const sceneContainer = document.getElementById('scene-container');
+      
+      // 1. Ocultar y remover el menú
+      menu.classList.add('hidden');
+      setTimeout(() => { menu.style.display = 'none'; }, 1000); 
 
-    header p {
-      margin-top: 20px;
-      font-size: 1.3rem;
-      color: #ddd;
-      animation: fadeUp 2s ease-in-out;
-    }
+      // 🚨 CLAVE: Limpiar el contenedor antes de crear la nueva escena (Robustez)
+      sceneContainer.innerHTML = ''; 
 
-    @keyframes fadeUp {
-      0% { transform: translateY(50px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
+      // 2. Crear el elemento <a-scene>
+      const scene = document.createElement('a-scene');
+      
+      // Atributos base (aplicables a todos los modos)
+      scene.setAttribute('shadow', 'type: pcfsoft');
+      scene.setAttribute('vr-mode-ui', 'enabled: true');
+      
+      let cameraContent = '';
+      let sceneContent = '';
 
-    section {
-      max-width: 900px;
-      margin: 60px auto;
-      padding: 30px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      backdrop-filter: blur(5px);
-      transform: translateY(50px);
-      opacity: 0;
-      animation: fadeInUp 1.5s forwards;
-    }
+      // 3. Lógica de Modos (La clave para la cámara y AR)
+      if (mode === 'ar') {
+        // --- MODO AR (Realidad Aumentada) ---
+        
+        // 🚨 CLAVE: SÓLO añadimos 'arjs' si es Realidad Aumentada (pide cámara)
+        scene.setAttribute('arjs', 'trackingMethod: best; sourceType: webcam; debugUIEnabled: false;');
+        scene.removeAttribute('embedded'); 
+        
+        cameraContent = '<a-entity camera></a-entity>';
+        
+        // El contenido 3D debe estar dentro de un <a-marker> en modo AR
+        sceneContent = `
+            <a-marker preset="hiro">
+                <a-entity gltf-model="url(assets/guitarra.glb)" position="0 0 0" rotation="0 30 0" scale="0.5 0.5 0.5" shadow="cast: true"
+                          animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
+                          
+                <a-entity position="0 1 0" rotation="0 0 0"
+                          info-panel="title: 💡 MODO AR; content: El modelo aparece sobre el marcador Hiro.; color: #ffd93d"></a-entity>
+            </a-marker>
+            
+            ${cameraContent}
+        `;
+        
+      } else {
+        // --- MODOS 3D NORMALES (Desktop y Móvil) ---
+        
+        // Aseguramos que NO tiene arjs, y SÍ tiene embedded (no pide cámara)
+        scene.setAttribute('embedded', '');
+        
+        // Ajuste de robustez: Color de fondo sólido de respaldo (el degradado está en styles.css)
+        scene.setAttribute('background', 'color: #1e3c72');
+        
+        // 3. Configurar la Cámara y Controles
+        if (mode === 'desktop') {
+          // PC: Movimiento WASD + Ratón (look-controls)
+          cameraContent = `
+            <a-entity camera look-controls wasd-controls position="0 1.6 6">
+              <a-cursor raycaster="objects: .clickable" color="#FFD93D" fuse="true" fuse-timeout="1500"></a-cursor>
+            </a-entity>
+          `;
+        } else if (mode === 'mobile') {
+          // Móvil: Giroscopio (look-controls) + Movimiento Táctil (touch-controls)
+          cameraContent = `
+            <a-entity camera look-controls touch-controls position="0 1.6 6">
+              <a-cursor raycaster="objects: .clickable" color="#FFD93D" fuse="true" fuse-timeout="1500"></a-cursor>
+            </a-entity>
+          `;
+        }
+        
+        // 4. Contenido de la escena 3D (Tu Cuarto Completo)
+        sceneContent = `
+            <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
+            <a-light type="point" position="0 2 -2" color="#FFD93D" intensity="1.2" distance="8" decay="2"></a-light>
+            <a-light type="point" position="2 1 -1" color="#6EC1E4" intensity="0.8" distance="5" decay="2"></a-light>
 
-    section:nth-child(odd) {
-      animation-delay: 0.3s;
-    }
-    section:nth-child(even) {
-      animation-delay: 0.6s;
-    }
+            ${cameraContent}
 
-    @keyframes fadeInUp {
-      to {
-        transform: translateY(0);
-        opacity: 1;
+            <a-plane position="0 0 0" rotation="-90 0 0" width="16" height="16" color="#2d2d40" shadow="receive: true"></a-plane>
+            <a-box position="0 2 -8" depth="0.1" height="4" width="16" color="#3b3b5c"></a-box>
+            <a-box position="-8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
+            <a-box position="8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
+            <a-box position="0 4 0" depth="16" height="0.1" width="16" color="#55557a"></a-box>
+
+            <a-entity position="-5 1.7 -5" rotation="0 35 0"
+                      info-panel="title: 📚 Sobre mi; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
+                      animation="property: position; to: -5 1.8 -5; dir: alternate; loop: true; dur: 2500; easing: easeInOutQuad;"></a-entity>
+
+            <a-entity position="0 1.7 -4" rotation="0 0 0"
+                      info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio solido.\\n• Crear UBoxHouse; color: #1e3c72"
+                      animation="property: position; to: 0 1.9 -4; dir: alternate; loop: true; dur: 2800; easing: easeInOutSine;"></a-entity>
+
+            <a-entity position="5 1.7 -5" rotation="0 -35 0"
+                      info-panel="title: 💡 Intereses; content: • 🎵 Musica: produccion y master\\n• 💻 Programación: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
+                      animation="property: position; to: 5 1.8 -5; dir: alternate; loop: true; dur: 2600; easing: easeInOutQuad;"></a-entity>
+
+            <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.1 0.1 0.1" shadow="cast: true"
+                      animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
+            <a-entity gltf-model="url(assets/laptop.glb)" position="4 0 -3" rotation="0 -20 0" scale="1 1 1" shadow="cast: true"
+                      animation="property: rotation; to: 0 340 0; loop: true; dur: 14000; easing: linear;"></a-entity>
+            <a-text value="© 2025 - Creado por Angel Alejandro 🚀"
+                    position="0 0.2 -2.5"
+                    align="center"
+                    color="#AAA"
+                    width="6"></a-text>
+        `;
+      }
+
+      // 5. Inyectar el contenido y montar la escena
+      scene.innerHTML = sceneContent;
+      sceneContainer.appendChild(scene);
+      
+      // 🚨 CLAVE: Forzar la reproducción de la escena (soluciona pantalla en blanco)
+      if (scene.hasLoaded) {
+          scene.play();
+      } else {
+          scene.addEventListener('loaded', function () {
+              scene.play();
+          });
       }
     }
+  </script>
 
-    section h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 2rem;
-      background: linear-gradient(to right, #ff9a9e, #fad0c4);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    ul {
-      list-style: none;
-    }
-
-    li {
-      background: rgba(255,255,255,0.1);
-      margin: 10px 0;
-      padding: 15px;
-      border-radius: 15px;
-      transition: transform 0.4s, background 0.4s;
-    }
-
-    li:hover {
-      transform: scale(1.08) rotate(-1deg);
-      background: rgba(255,255,255,0.2);
-    }
-
-    footer {
-      text-align: center;
-      padding: 30px;
-      font-size: 0.9rem;
-      background: rgba(0,0,0,0.4);
-      margin-top: 60px;
-    }
-
-    /* Animación flotante */
-    .float {
-      animation: floating 4s ease-in-out infinite;
-    }
-
-    @keyframes floating {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-15px); }
-      100% { transform: translateY(0px); }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1 class="float">✨ Angel Alejandro Villon Panimboza ✨</h1>
-    <p>Estudiante de Ingeniería de Software | Programador inexperto| Ingeniero en Prompts  </p>
-  </header>
-
-  <section>
-    <h2>📚 Sobre mí</h2>
-    <p>
-      Soy un joven apasionado por la <strong>programación</strong>, la <strong>música</strong> 
-      y la <strong>creatividad</strong>. Nací el 2 de octubre de 2004, estudié Contabilidad Técnica
-      y actualmente curso <strong>Ingeniería de Software</strong>. Me gusta aprender, crear proyectos
-      y explorar nuevas áreas como edición de video, producción musical y desarrollo de videojuegos.
-    </p>
-  </section>
-
-  <section>
-    <h2>🎯 Objetivos</h2>
-    <ul>
-      <li>Convertirme en un programador de alto nivel.</li>
-      <li>Construir un portafolio sólido en programación, edición y música.</li>
-      <li>Crear mi propia red social: <strong>UBoxHouse</strong>.</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>💡 Intereses</h2>
-    <ul>
-      <li>🎵 Música: producción, mezcla y máster.</li>
-      <li>💻 Programación: Java, Python, C++, Qt, videojuegos.</li>
-      <li>🎬 Edición: Photoshop, Premiere, efectos visuales.</li>
-    </ul>
-  </section>
-
-  <footer>
-    © 2025 - Creado por Angel Alejandro 🚀
-  </footer>
 </body>
 </html>

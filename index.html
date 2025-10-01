@@ -6,8 +6,7 @@
   <title>Portafolio 3D / AR - Angel Alejandro</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-
+  
   <script src="js/components.js"></script>
   <link rel="stylesheet" href="css/styles.css"> 
 </head>
@@ -21,11 +20,11 @@
     <button class="menu-button" onclick="loadScene('mobile')">
       📱 Exploración 3D (Giroscopio/Táctil)
     </button>
-    <button class="menu-button" onclick="loadScene('ar')">
-      🖼️ Realidad Aumentada (AR)
+    <button class="menu-button" onclick="enterImmersiveMode()">
+      🕶️ Realidad Aumentada/Virtual (WebXR)
     </button>
     <p class="menu-note">
-      *AR y Giroscopio requieren un dispositivo móvil.
+      *El modo WebXR requiere un dispositivo móvil con soporte AR/VR.
     </p>
   </div>
 
@@ -33,134 +32,111 @@
 
 
   <script>
+    // Referencia global para la escena (si necesitamos manipularla)
+    let currentScene = null; 
+
     function loadScene(mode) {
       const menu = document.getElementById('menu-container');
+      const sceneContainer = document.getElementById('scene-container');
       
-      // 🚨 CLAVE 1: Limpiar y recrear el contenedor de la escena para asegurar
-      // que la instancia anterior de A-Frame (y AR.js si existía) se destruya por completo.
-      let sceneContainer = document.getElementById('scene-container');
-      if (sceneContainer) {
-          sceneContainer.remove();
+      // 1. Limpieza de escena anterior (Esencial para WebXR)
+      if (currentScene) {
+          currentScene.remove();
+          currentScene = null;
       }
-      sceneContainer = document.createElement('div');
-      sceneContainer.id = 'scene-container';
-      document.body.appendChild(sceneContainer);
-
-      // Ocultar el menú con una transición suave
+      sceneContainer.innerHTML = '';
+      
+      // Ocultar el menú
       menu.classList.add('hidden');
       setTimeout(() => { menu.style.display = 'none'; }, 1000); 
 
       // 2. Crear el elemento <a-scene>
       const scene = document.createElement('a-scene');
-      
-      // Atributos base (aplicables a todos los modos)
+      currentScene = scene; // Guardar la referencia
+
+      // Atributos base (necesarios para el modo 3D embebido)
+      scene.setAttribute('embedded', '');
       scene.setAttribute('shadow', 'type: pcfsoft');
-      scene.setAttribute('vr-mode-ui', 'enabled: true');
-      
-      let cameraContent = '';
-      let sceneContent = '';
+      scene.setAttribute('vr-mode-ui', 'enabled: true'); // Mostrar el botón de inmersión
+      scene.setAttribute('background', 'color: #1e3c72'); // Fondo de respaldo
 
-      // 3. Lógica de Modos (La corrección clave es aquí)
-      if (mode === 'ar') {
-        // --- MODO AR (Realidad Aumentada) ---
-        
-        // SÓLO añadimos arjs si es AR
-        scene.setAttribute('arjs', 'trackingMethod: best; sourceType: webcam; debugUIEnabled: false;');
-        scene.removeAttribute('embedded'); 
-        
-        // En AR, la escena 3D DEBE ir dentro de un <a-marker>
-        sceneContent = `
-            <a-marker preset="hiro">
-                <a-entity gltf-model="url(assets/guitarra.glb)" position="0 0 0" rotation="0 30 0" scale="0.3 0.3 0.3" shadow="cast: true"
-                          animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
-                          
-                <a-entity position="0 1 0" rotation="0 0 0"
-                          info-panel="title: 💡 MODO AR; content: El modelo aparece sobre el marcador Hiro.; color: #ffd93d"></a-entity>
-            </a-marker>
-            
-            <a-entity camera></a-entity>
-        `;
-        
-      } else {
-        // --- MODOS 3D NORMALES (Desktop y Móvil) ---
-        
-        // Aseguramos que NO tiene arjs, y SÍ tiene embedded
-        scene.setAttribute('embedded', '');
-        
-        // Ajuste de robustez: Color de fondo sólido de respaldo
-        scene.setAttribute('background', 'color: #1e3c72');
+      let cameraControls = '';
 
-        // 3. Configurar la Cámara
-        if (mode === 'desktop') {
-          // PC: Movimiento WASD + Ratón (look-controls)
-          cameraContent = `
-            <a-entity camera look-controls wasd-controls position="0 1.6 6">
-              <a-cursor raycaster="objects: .clickable" color="#FFD93D" fuse="true" fuse-timeout="1500"></a-cursor>
-            </a-entity>
-          `;
-        } else if (mode === 'mobile') {
-          // Móvil: Giroscopio (look-controls) + Movimiento Táctil (touch-controls)
-          cameraContent = `
-            <a-entity camera look-controls touch-controls position="0 1.6 6">
-              <a-cursor raycaster="objects: .clickable" color="#FFD93D" fuse="true" fuse-timeout="1500"></a-cursor>
-            </a-entity>
-          `;
-        }
-        
-        // 4. Contenido de la escena 3D (Tu Cuarto Completo)
-        sceneContent = `
-            <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
-            <a-light type="point" position="0 2 -2" color="#FFD93D" intensity="1.2" distance="8" decay="2"></a-light>
-            <a-light type="point" position="2 1 -1" color="#6EC1E4" intensity="0.8" distance="5" decay="2"></a-light>
-
-            ${cameraContent}
-
-            <a-plane position="0 0 0" rotation="-90 0 0" width="16" height="16" color="#2d2d40" shadow="receive: true"></a-plane>
-            <a-box position="0 2 -8" depth="0.1" height="4" width="16" color="#3b3b5c"></a-box>
-            <a-box position="-8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
-            <a-box position="8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
-            <a-box position="0 4 0" depth="16" height="0.1" width="16" color="#55557a"></a-box>
-
-            <a-entity position="-5 1.7 -5" rotation="0 35 0"
-                      info-panel="title: 📚 Sobre mí; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
-                      animation="property: position; to: -5 1.8 -5; dir: alternate; loop: true; dur: 2500; easing: easeInOutQuad;"></a-entity>
-
-            <a-entity position="0 1.7 -4" rotation="0 0 0"
-                      info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio sólido.\\n• Crear UBoxHouse; color: #1e3c72"
-                      animation="property: position; to: 0 1.9 -4; dir: alternate; loop: true; dur: 2800; easing: easeInOutSine;"></a-entity>
-
-            <a-entity position="5 1.7 -5" rotation="0 -35 0"
-                      info-panel="title: 💡 Intereses; content: • 🎵 Música: producción y máster\\n• 💻 Programación: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
-                      animation="property: position; to: 5 1.8 -5; dir: alternate; loop: true; dur: 2600; easing: easeInOutQuad;"></a-entity>
-
-            <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.3 0.3 0.3" shadow="cast: true"
-                      animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
-            <a-entity gltf-model="url(assets/laptop.glb)" position="4 0 -3" rotation="0 -20 0" scale="0.4 0.4 0.4" shadow="cast: true"
-                      animation="property: rotation; to: 0 340 0; loop: true; dur: 14000; easing: linear;"></a-entity>
-
-            <a-text value="© 2025 - Creado por Angel Alejandro 🚀"
-                    position="0 0.2 -2.5"
-                    align="center"
-                    color="#AAA"
-                    width="6"></a-text>
-        `;
+      // 3. Configurar la Cámara y Controles
+      if (mode === 'desktop') {
+        // PC: Movimiento WASD + Ratón (look-controls)
+        cameraControls = 'look-controls wasd-controls';
+      } else if (mode === 'mobile') {
+        // Móvil: Giroscopio y Táctil. El look-controls detecta el giroscopio.
+        cameraControls = 'look-controls touch-controls';
       }
+      
+      const cameraContent = `
+        <a-entity camera ${cameraControls} position="0 1.6 6">
+          <a-cursor raycaster="objects: .clickable" color="#FFD93D" fuse="true" fuse-timeout="1500"></a-cursor>
+        </a-entity>
+      `;
+      
+      // 4. Contenido de la escena (El Cuarto Completo)
+      const sceneContent = `
+          <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
+          <a-light type="point" position="0 2 -2" color="#FFD93D" intensity="1.2" distance="8" decay="2"></a-light>
+          <a-light type="point" position="2 1 -1" color="#6EC1E4" intensity="0.8" distance="5" decay="2"></a-light>
 
-      // 5. Inyectar el contenido y montar la escena
+          ${cameraContent}
+
+          <a-plane position="0 0 0" rotation="-90 0 0" width="16" height="16" color="#2d2d40" shadow="receive: true"></a-plane>
+          <a-box position="0 2 -8" depth="0.1" height="4" width="16" color="#3b3b5c"></a-box>
+          <a-box position="-8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
+          <a-box position="8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
+          <a-box position="0 4 0" depth="16" height="0.1" width="16" color="#55557a"></a-box>
+
+          <a-entity position="-5 1.7 -5" rotation="0 35 0"
+                    info-panel="title: 📚 Sobre mí; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
+                    animation="property: position; to: -5 1.8 -5; dir: alternate; loop: true; dur: 2500; easing: easeInOutQuad;"></a-entity>
+
+          <a-entity position="0 1.7 -4" rotation="0 0 0"
+                    info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\n• Construir portafolio sólido.\n• Crear UBoxHouse; color: #1e3c72"
+                    animation="property: position; to: 0 1.9 -4; dir: alternate; loop: true; dur: 2800; easing: easeInOutSine;"></a-entity>
+
+          <a-entity position="5 1.7 -5" rotation="0 -35 0"
+                    info-panel="title: 💡 Intereses; content: • 🎵 Música: producción y máster\n• 💻 Programación: Java, Python, C++\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
+                    animation="property: position; to: 5 1.8 -5; dir: alternate; loop: true; dur: 2600; easing: easeInOutQuad;"></a-entity>
+
+          <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.3 0.3 0.3" shadow="cast: true"
+                    animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
+          <a-entity gltf-model="url(assets/laptop.glb)" position="4 0 -3" rotation="0 -20 0" scale="0.4 0.4 0.4" shadow="cast: true"
+                    animation="property: rotation; to: 0 340 0; loop: true; dur: 14000; easing: linear;"></a-entity>
+
+          <a-text value="© 2025 - Creado por Angel Alejandro 🚀"
+                  position="0 0.2 -2.5"
+                  align="center"
+                  color="#AAA"
+                  width="6"></a-text>
+      `;
+
+      // 5. Inyectar y reproducir la escena
       scene.innerHTML = sceneContent;
       sceneContainer.appendChild(scene);
 
-      // 🚨 CLAVE 2: Forzar la reproducción de la escena (siempre necesario para estabilidad)
-      if (scene.hasLoaded) {
+      // Forzar la reproducción
+      scene.addEventListener('loaded', function () {
           scene.play();
-      } else {
-          scene.addEventListener('loaded', function () {
-              scene.play();
-          });
-      }
+      });
+    }
+
+    // Nueva función para el modo AR/VR (WebXR)
+    function enterImmersiveMode() {
+        if (!currentScene) {
+            // Cargar primero la escena en modo móvil como base
+            loadScene('mobile');
+        }
+
+        // 🚨 CLAVE: Cuando la escena esté cargada, buscamos el botón de inmersión 
+        // y lo activamos (Esto es lo que hace WebXR).
+        currentScene.addEventListener('loaded', () => {
+            // El modo WebXR puede ser 'VR' o 'AR', A-Frame lo gestiona por el dispositivo.
+            currentScene.enterVR(); 
+        });
     }
   </script>
-
-</body>
-</html>
-

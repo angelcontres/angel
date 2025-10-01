@@ -54,20 +54,19 @@
       const scene = document.createElement('a-scene');
       currentScene = scene; // Guardar la referencia
 
-      // Atributos base (necesarios para el modo 3D embebido)
+      // Atributos base 
       scene.setAttribute('embedded', '');
       scene.setAttribute('shadow', 'type: pcfsoft');
-      scene.setAttribute('vr-mode-ui', 'enabled: true'); // Mostrar el botón de inmersión
-      scene.setAttribute('background', 'color: #1e3c72'); // Fondo de respaldo
+      scene.setAttribute('vr-mode-ui', 'enabled: true'); 
+      scene.setAttribute('background', 'color: #1e3c72'); 
 
       let cameraControls = '';
+      let sceneContent = ''; // Contenido que se inyectará en la escena
 
       // 3. Configurar la Cámara y Controles
       if (mode === 'desktop') {
-        // PC: Movimiento WASD + Ratón (look-controls)
         cameraControls = 'look-controls wasd-controls';
       } else if (mode === 'mobile') {
-        // Móvil: Giroscopio y Táctil. El look-controls detecta el giroscopio.
         cameraControls = 'look-controls touch-controls';
       }
       
@@ -77,43 +76,78 @@
         </a-entity>
       `;
       
-      // 4. Contenido de la escena (El Cuarto Completo)
-      const sceneContent = `
-          <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
-          <a-light type="point" position="0 2 -2" color="#FFD93D" intensity="1.2" distance="8" decay="2"></a-light>
-          <a-light type="point" position="2 1 -1" color="#6EC1E4" intensity="0.8" distance="5" decay="2"></a-light>
+      // 4. Contenido de la escena 
+      
+      // Definimos la estructura de los paneles (que es común a ambos modos)
+      const panelContent = `
+        <a-entity position="-1 1.7 0" rotation="0 35 0"
+                  info-panel="title: 📚 Sobre mí; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
+                  animation="property: position; to: -1 1.8 0; dir: alternate; loop: true; dur: 2500; easing: easeInOutQuad;"></a-entity>
 
-          ${cameraContent}
+        <a-entity position="0 1.7 0" rotation="0 0 0"
+                  info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio sólido.\\n• Crear UBoxHouse; color: #1e3c72"
+                  animation="property: position; to: 0 1.9 0; dir: alternate; loop: true; dur: 2800; easing: easeInOutSine;"></a-entity>
 
-          <a-plane position="0 0 0" rotation="-90 0 0" width="16" height="16" color="#2d2d40" shadow="receive: true"></a-plane>
-          <a-box position="0 2 -8" depth="0.1" height="4" width="16" color="#3b3b5c"></a-box>
-          <a-box position="-8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
-          <a-box position="8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
-          <a-box position="0 4 0" depth="16" height="0.1" width="16" color="#55557a"></a-box>
-
-          <a-entity position="-5 1.7 -5" rotation="0 35 0"
-                    info-panel="title: 📚 Sobre mí; content: Soy un joven apasionado por la programación, música y creatividad.; color: #2a5298"
-                    animation="property: position; to: -5 1.8 -5; dir: alternate; loop: true; dur: 2500; easing: easeInOutQuad;"></a-entity>
-
-          <a-entity position="0 1.7 -4" rotation="0 0 0"
-                    info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\n• Construir portafolio sólido.\n• Crear UBoxHouse; color: #1e3c72"
-                    animation="property: position; to: 0 1.9 -4; dir: alternate; loop: true; dur: 2800; easing: easeInOutSine;"></a-entity>
-
-          <a-entity position="5 1.7 -5" rotation="0 -35 0"
-                    info-panel="title: 💡 Intereses; content: • 🎵 Música: producción y máster\n• 💻 Programación: Java, Python, C++\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
-                    animation="property: position; to: 5 1.8 -5; dir: alternate; loop: true; dur: 2600; easing: easeInOutQuad;"></a-entity>
-
-          <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.3 0.3 0.3" shadow="cast: true"
-                    animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
-          <a-entity gltf-model="url(assets/laptop.glb)" position="4 0 -3" rotation="0 -20 0" scale="0.4 0.4 0.4" shadow="cast: true"
-                    animation="property: rotation; to: 0 340 0; loop: true; dur: 14000; easing: linear;"></a-entity>
-
-          <a-text value="© 2025 - Creado por Angel Alejandro 🚀"
-                  position="0 0.2 -2.5"
-                  align="center"
-                  color="#AAA"
-                  width="6"></a-text>
+        <a-entity position="1 1.7 0" rotation="0 -35 0"
+                  info-panel="title: 💡 Intereses; content: • 🎵 Música: producción y máster\\n• 💻 Programación: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color: #2c5364"
+                  animation="property: position; to: 1 1.8 0; dir: alternate; loop: true; dur: 2600; easing: easeInOutQuad;"></a-entity>
       `;
+
+      if (mode === 'ar') {
+        // --- MODO AR: Detección de Plano (Solo Paneles) ---
+        
+        // 🚨 CLAVE: La cámara ahora está fuera del contenido 3D, ya que la gestiona WebXR.
+        // Solo necesitamos la entidad de anclaje para los paneles.
+
+        sceneContent = `
+            ${cameraContent}
+            
+            <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
+            
+            <a-entity webxr-ar-anchor="target: floor;"></a-entity>
+
+            <a-entity webxr-ar-anchor="target: floor;">
+                ${panelContent.replace(/position="(-?\d+)\s+1.7\s+(-?\d+)"/g, (match, x, z) => `position="${x} 0.5 ${z}"`)}
+                
+                <a-text value="Busca una superficie plana para anclar los paneles"
+                    position="0 0.1 0"
+                    align="center"
+                    color="#FFD93D"
+                    width="2.5"></a-text>
+            </a-entity>
+        `;
+        
+      } else {
+        // --- MODOS 3D NORMALES (Desktop y Móvil) ---
+        
+        // Contenido completo del cuarto
+        sceneContent = `
+            <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
+            <a-light type="point" position="0 2 -2" color="#FFD93D" intensity="1.2" distance="8" decay="2"></a-light>
+            <a-light type="point" position="2 1 -1" color="#6EC1E4" intensity="0.8" distance="5" decay="2"></a-light>
+
+            ${cameraContent}
+
+            <a-plane position="0 0 0" rotation="-90 0 0" width="16" height="16" color="#2d2d40" shadow="receive: true"></a-plane>
+            <a-box position="0 2 -8" depth="0.1" height="4" width="16" color="#3b3b5c"></a-box>
+            <a-box position="-8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
+            <a-box position="8 2 0" depth="16" height="4" width="0.1" color="#4a4a6a"></a-box>
+            <a-box position="0 4 0" depth="16" height="0.1" width="16" color="#55557a"></a-box>
+
+            ${panelContent.replace(/position="(-?\d+)\s+0.5\s+(-?\d+)"/g, (match, x, z) => `position="${x} 1.7 ${z}"`)}
+            
+            <a-entity gltf-model="url(assets/guitarra.glb)" position="-4 0 -3" rotation="0 30 0" scale="0.3 0.3 0.3" shadow="cast: true"
+                      animation="property: rotation; to: 0 390 0; loop: true; dur: 15000; easing: linear;"></a-entity>
+            <a-entity gltf-model="url(assets/laptop.glb)" position="4 0 -3" rotation="0 -20 0" scale="0.4 0.4 0.4" shadow="cast: true"
+                      animation="property: rotation; to: 0 340 0; loop: true; dur: 14000; easing: linear;"></a-entity>
+
+            <a-text value="© 2025 - Creado por Angel Alejandro 🚀"
+                    position="0 0.2 -2.5"
+                    align="center"
+                    color="#AAA"
+                    width="6"></a-text>
+        `;
+      }
 
       // 5. Inyectar y reproducir la escena
       scene.innerHTML = sceneContent;
@@ -127,16 +161,13 @@
 
     // Nueva función para el modo AR/VR (WebXR)
     function enterImmersiveMode() {
-        if (!currentScene) {
-            // Cargar primero la escena en modo móvil como base
-            loadScene('mobile');
-        }
+        // Al darle al botón "WebXR", cargamos la escena en modo 'ar'
+        loadScene('ar');
 
-        // 🚨 CLAVE: Cuando la escena esté cargada, buscamos el botón de inmersión 
-        // y lo activamos (Esto es lo que hace WebXR).
         currentScene.addEventListener('loaded', () => {
-            // El modo WebXR puede ser 'VR' o 'AR', A-Frame lo gestiona por el dispositivo.
-            currentScene.enterVR(); 
+            // Entramos directamente en modo AR.
+            currentScene.enterAR(); 
         });
     }
-  </script>
+</script>
+

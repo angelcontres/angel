@@ -7,76 +7,276 @@
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-  <script src="js/components.js"></script>
-  <link rel="stylesheet" href="css/styles.css">
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { margin: 0; overflow: hidden; }
-    #menu-container {
-      position: absolute; top:0; left:0; width:100%; height:100%;
-      display:flex; flex-direction:column; justify-content:center; align-items:center;
-      background: linear-gradient(135deg,#1e3c72,#2a5298);
-      z-index:10; transition: opacity 1s ease;
+    :root {
+      --primary: #1e3c72;
+      --secondary: #2a5298;
+      --accent: #FFD93D;
+      --light: #FFF5E1;
+      --dark: #1a1a2e;
     }
-    #menu-container.hidden { opacity:0; pointer-events:none; }
-    .menu-title { color:#FFD93D; font-size:2em; margin-bottom:1rem; }
-    .menu-button {
-      margin:0.5rem; padding:1rem 2rem; font-size:1.2rem;
-      border:none; border-radius:12px; cursor:pointer;
-      background:#FFD93D; color:#1e3c72; font-weight:bold; transition: transform 0.2s;
-    }
-    .menu-button:hover { transform:scale(1.1); }
-    .menu-note { margin-top:1rem; color:#FFF; font-size:0.9rem; text-align:center; }
     
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: var(--dark);
+    }
+    
+    #menu-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      z-index: 10;
+      transition: opacity 1s ease, transform 0.8s ease;
+      padding: 20px;
+    }
+    
+    #menu-container.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-20px);
+    }
+    
+    .menu-title {
+      color: var(--accent);
+      font-size: 2.5em;
+      margin-bottom: 2rem;
+      text-align: center;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .menu-button {
+      margin: 0;
+      padding: 1.2rem 2rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: var(--accent);
+      color: var(--primary);
+      font-weight: bold;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .menu-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .menu-note {
+      margin-top: 2rem;
+      color: var(--light);
+      font-size: 0.9rem;
+      text-align: center;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+    
+    #back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      background: var(--accent);
+      color: var(--primary);
+      border: none;
+      cursor: pointer;
+      z-index: 20;
+      display: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    #back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    #scene-container {
+      width: 100%;
+      height: 100vh;
+    }
+    
+    .loading-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--accent);
+      font-size: 1.5rem;
+      z-index: 15;
+      display: none;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .menu-title {
+        font-size: 2rem;
+      }
+      
+      .menu-button {
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .menu-title {
+        font-size: 1.8rem;
+      }
+      
+      .menu-button {
+        padding: 0.9rem 1.2rem;
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
-<button id="back-button" style="
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 0.7rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 10px;
-    background: #FFD93D;
-    color: #1e3c72;
-    border: none;
-    cursor: pointer;
-    z-index: 20;
-    display: none;
-">🔙 Regresar</button>
+  <button id="back-button">
+    <i class="fas fa-arrow-left"></i> Regresar al Menú
+  </button>
+  
+  <div id="loading-indicator" class="loading-indicator">
+    <i class="fas fa-spinner fa-spin"></i> Cargando experiencia...
+  </div>
 
   <div id="menu-container">
     <h1 class="menu-title">Elige tu Experiencia 🚀</h1>
-    <button class="menu-button" onclick="loadScene('desktop')">💻 3D Desktop</button>
-    <button class="menu-button" onclick="loadScene('mobile')">📱 3D Mobile</button>
-    <button class="menu-button" onclick="loadScene('ar')">🕶️ AR Markerless</button>
-    <p class="menu-note">*AR requiere Chrome/Safari móvil con cámara activa.</p>
+    <div class="menu-buttons">
+      <button class="menu-button" onclick="loadScene('desktop')">
+        <i class="fas fa-desktop"></i> 3D Desktop
+      </button>
+      <button class="menu-button" onclick="loadScene('mobile')">
+        <i class="fas fa-mobile-alt"></i> 3D Mobile
+      </button>
+      <button class="menu-button" onclick="loadScene('ar')">
+        <i class="fas fa-vr-cardboard"></i> AR Markerless
+      </button>
+    </div>
+    <p class="menu-note">
+      * La experiencia AR requiere Chrome/Safari móvil con cámara activa y permisos concedidos.
+    </p>
   </div>
 
   <div id="scene-container"></div>
 
   <script>
+    // Registrar componente de panel de información
+    AFRAME.registerComponent('info-panel', {
+      schema: {
+        title: {type: 'string', default: 'Título'},
+        content: {type: 'string', default: 'Contenido'},
+        color: {type: 'string', default: '#2a5298'}
+      },
+      init: function() {
+        const data = this.data;
+        const el = this.el;
+        
+        // Crear panel
+        el.setAttribute('geometry', 'primitive: box; width: 2; height: 1.5; depth: 0.05');
+        el.setAttribute('material', `color: ${data.color}; shader: flat`);
+        el.setAttribute('class', 'clickable');
+        
+        // Crear título
+        const title = document.createElement('a-text');
+        title.setAttribute('value', data.title);
+        title.setAttribute('position', '0 0.5 0.03');
+        title.setAttribute('align', 'center');
+        title.setAttribute('width', '1.8');
+        title.setAttribute('color', '#FFFFFF');
+        title.setAttribute('font', 'exo2bold');
+        
+        // Crear contenido
+        const content = document.createElement('a-text');
+        content.setAttribute('value', data.content);
+        content.setAttribute('position', '0 0 0.03');
+        content.setAttribute('align', 'center');
+        content.setAttribute('width', '1.8');
+        content.setAttribute('color', '#FFFFFF');
+        content.setAttribute('font', 'exo2semibold');
+        
+        // Añadir elementos al panel
+        el.appendChild(title);
+        el.appendChild(content);
+        
+        // Animación de hover
+        el.addEventListener('mouseenter', () => {
+          el.setAttribute('animation', {
+            property: 'scale',
+            to: '1.1 1.1 1.1',
+            dur: 300,
+            easing: 'easeOutElastic'
+          });
+        });
+        
+        el.addEventListener('mouseleave', () => {
+          el.setAttribute('animation', {
+            property: 'scale',
+            to: '1 1 1',
+            dur: 300,
+            easing: 'easeOutElastic'
+          });
+        });
+      }
+    });
 
     let currentScene = null;
-
-
     const backButton = document.getElementById('back-button');
+    const loadingIndicator = document.getElementById('loading-indicator');
 
-function showBackButton() {
-    backButton.style.display = 'block';
-}
+    function showBackButton() {
+      backButton.style.display = 'block';
+    }
 
-function hideBackButton() {
-    backButton.style.display = 'none';
-}
+    function hideBackButton() {
+      backButton.style.display = 'none';
+    }
 
-  backButton.addEventListener('click', () => {
+    function showLoading() {
+      loadingIndicator.style.display = 'block';
+    }
+
+    function hideLoading() {
+      loadingIndicator.style.display = 'none';
+    }
+
+    backButton.addEventListener('click', () => {
       // Limpiamos la escena actual
       if(currentScene){
-          if(currentScene.hasAttribute('arjs')) stopARCamera();
-          currentScene.remove();
-          currentScene = null;
+        if(currentScene.hasAttribute('arjs')) stopARCamera();
+        currentScene.remove();
+        currentScene = null;
       }
       document.getElementById('scene-container').innerHTML = '';
 
@@ -87,114 +287,143 @@ function hideBackButton() {
 
       // Ocultamos el botón
       hideBackButton();
-  });
-
+    });
 
     function stopARCamera() {
       const arVideo = document.querySelector('video[srcObject]');
       if(arVideo && arVideo.srcObject){
-        arVideo.srcObject.getTracks().forEach(track=>track.stop());
+        arVideo.srcObject.getTracks().forEach(track => track.stop());
         arVideo.remove();
       }
     }
 
-    function loadScene(mode){
+    function loadScene(mode) {
       const menu = document.getElementById('menu-container');
       const container = document.getElementById('scene-container');
 
       menu.classList.add('hidden');
-      setTimeout(()=>menu.style.display='none',1000);
+      setTimeout(() => menu.style.display = 'none', 1000);
+      
+      showLoading();
 
-      if(currentScene){
-        if(currentScene.hasAttribute('arjs')){
+      if(currentScene) {
+        if(currentScene.hasAttribute('arjs')) {
           currentScene.removeAttribute('arjs');
           stopARCamera();
         }
-        currentScene.remove(); currentScene=null;
+        currentScene.remove();
+        currentScene = null;
       }
-      container.innerHTML='';
+      container.innerHTML = '';
 
-      const scene = document.createElement('a-scene');
-      currentScene = scene;
-      scene.setAttribute('shadow','type:pcfsoft');
-      scene.setAttribute('vr-mode-ui','enabled:true');
-      scene.setAttribute('background','color:#1e3c72');
-      scene.setAttribute('embedded',mode!=='ar');
+      setTimeout(() => {
+        const scene = document.createElement('a-scene');
+        currentScene = scene;
+        scene.setAttribute('shadow', 'type: pcfsoft');
+        scene.setAttribute('vr-mode-ui', 'enabled: false');
+        scene.setAttribute('background', 'color: #1e3c72');
+        scene.setAttribute('renderer', 'colorManagement: true; physicallyCorrectLights: true');
+        scene.setAttribute('embedded', mode !== 'ar');
 
-      let camera='', content='';
+        let camera = '', content = '';
 
-      if(mode==='desktop'){
-        camera = `<a-entity camera look-controls wasd-controls position="0 1.6 8">
-                    <a-cursor raycaster="objects:.clickable" color="#FFD93D" fuse="true" fuse-timeout="1500"></a-cursor>
-                  </a-entity>`;
-      } else if(mode==='mobile'){
-        camera = `<a-entity camera look-controls touch-controls position="0 1.6 8">
-                    <a-cursor raycaster="objects:.clickable" color="#FFD93D" fuse="true" fuse-timeout="1500"></a-cursor>
-                  </a-entity>`;
-      } else if(mode==='ar'){
-        scene.setAttribute('arjs','sourceType:webcam; debugUIEnabled:false; trackingMethod:best;');
-        scene.removeAttribute('embedded');
-        camera = `<a-entity camera></a-entity>`;
-      }
+        if(mode === 'desktop') {
+          camera = `
+            <a-entity camera look-controls wasd-controls position="0 1.6 8">
+              <a-cursor 
+                raycaster="objects: .clickable" 
+                color="${getComputedStyle(document.documentElement).getPropertyValue('--accent')}" 
+                fuse="true" 
+                fuse-timeout="1500">
+              </a-cursor>
+            </a-entity>`;
+        } else if(mode === 'mobile') {
+          camera = `
+            <a-entity camera look-controls touch-controls position="0 1.6 8">
+              <a-cursor 
+                raycaster="objects: .clickable" 
+                color="${getComputedStyle(document.documentElement).getPropertyValue('--accent')}" 
+                fuse="true" 
+                fuse-timeout="1500">
+              </a-cursor>
+            </a-entity>`;
+        } else if(mode === 'ar') {
+          scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false; trackingMethod: best;');
+          scene.removeAttribute('embedded');
+          camera = `<a-entity camera></a-entity>`;
+        }
 
-      // Escalar cuarto más grande y separar paneles
-      content = `
-        ${camera}
+        // Escalar cuarto más grande y separar paneles
+        content = `
+          ${camera}
 
-        <a-entity scale="${mode==='ar' ? '4 4 4' : '1 1 1'}">
-          <!-- Luces -->
-          <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
-          <a-light type="point" position="0 3 -2" color="#FFD93D" intensity="1.2" distance="15" decay="2"></a-light>
-          <a-light type="point" position="2 2 -1" color="#6EC1E4" intensity="0.8" distance="10" decay="2"></a-light>
+          <a-entity scale="${mode === 'ar' ? '4 4 4' : '1 1 1'}">
+            <!-- Luces -->
+            <a-light type="ambient" color="#FFF5E1" intensity="0.7"></a-light>
+            <a-light type="point" position="0 3 -2" color="#FFD93D" intensity="1.2" distance="15" decay="2"></a-light>
+            <a-light type="point" position="2 2 -1" color="#6EC1E4" intensity="0.8" distance="10" decay="2"></a-light>
 
-          <!-- Piso -->
-          <a-plane position="0 0 0" rotation="-90 0 0" width="8" height="8" color="#2d2d40" shadow="receive:true"></a-plane>
+            <!-- Piso -->
+            <a-plane position="0 0 0" rotation="-90 0 0" width="8" height="8" color="#2d2d40" shadow="receive: true"></a-plane>
 
-          <!-- Paredes -->
-          <a-box position="0 1.5 -4" width="8" height="3" depth="0.1" color="#3b3b5c"></a-box>
-          <a-box position="-4 1.5 0" width="0.1" height="3" depth="8" color="#4a4a6a"></a-box>
-          <a-box position="4 1.5 0" width="0.1" height="3" depth="8" color="#4a4a6a"></a-box>
-          <a-box position="0 3 0" width="8" height="0.1" depth="8" color="#55557a"></a-box>
+            <!-- Paredes -->
+            <a-box position="0 1.5 -4" width="8" height="3" depth="0.1" color="#3b3b5c"></a-box>
+            <a-box position="-4 1.5 0" width="0.1" height="3" depth="8" color="#4a4a6a"></a-box>
+            <a-box position="4 1.5 0" width="0.1" height="3" depth="8" color="#4a4a6a"></a-box>
+            <a-box position="0 3 0" width="8" height="0.1" depth="8" color="#55557a"></a-box>
 
-          <!-- Paneles flotantes separados -->
-          <a-entity position="-3 1.5 -3" rotation="0 35 0"
-                    info-panel="title: 📚 Sobre mi; content: Soy un joven apasionado por la programación, música y creatividad.; color:#2a5298"
-                    animation="property:position; to:-3 1.6 -3; dir:alternate; loop:true; dur:2500; easing:easeInOutQuad;"></a-entity>
+            <!-- Paneles flotantes separados -->
+            <a-entity position="-3 1.5 -3" rotation="0 35 0"
+                      info-panel="title: 📚 Sobre mi; content: Soy un joven apasionado por la programación, música y creatividad.; color:#2a5298"
+                      animation="property:position; to:-3 1.6 -3; dir:alternate; loop:true; dur:2500; easing:easeInOutQuad;"></a-entity>
 
-          <a-entity position="0 1.5 -3" rotation="0 0 0"
-                    info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio sólido.\\n• Crear UBoxHouse; color:#1e3c72"
-                    animation="property:position; to:0 1.6 -3; dir:alternate; loop:true; dur:2800; easing:easeInOutSine;"></a-entity>
+            <a-entity position="0 1.5 -3" rotation="0 0 0"
+                      info-panel="title: 🎯 Objetivos; content: • Convertirme en programador de alto nivel.\\n• Construir portafolio sólido.\\n• Crear UBoxHouse; color:#1e3c72"
+                      animation="property:position; to:0 1.6 -3; dir:alternate; loop:true; dur:2800; easing:easeInOutSine;"></a-entity>
 
-          <a-entity position="3 1.5 -3" rotation="0 -35 0"
-                    info-panel="title: 💡 Intereses; content: • 🎵 Música: producción y máster\\n• 💻 Programación: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color:#2c5364"
-                    animation="property:position; to:3 1.6 -3; dir:alternate; loop:true; dur:2600; easing:easeInOutQuad;"></a-entity>
+            <a-entity position="3 1.5 -3" rotation="0 -35 0"
+                      info-panel="title: 💡 Intereses; content: • 🎵 Música: producción y máster\\n• 💻 Programación: Java, Python, C++\\n• 🎬 Edición: Photoshop, Premiere; color:#2c5364"
+                      animation="property:position; to:3 1.6 -3; dir:alternate; loop:true; dur:2600; easing:easeInOutQuad;"></a-entity>
 
-          <!-- Modelos 3D -->
-          <a-entity gltf-model="url(assets/guitarra.glb)" position="-2 0 1" rotation="0 30 0" scale="0.08 0.08 0.08"
-                    animation="property:rotation; to:0 390 0; loop:true; dur:15000; easing:linear;"></a-entity>
+            <!-- Modelos 3D - usando primitivas como fallback -->
+            <a-entity position="-2 0 1" rotation="0 30 0" scale="0.8 0.8 0.8"
+                      animation="property:rotation; to:0 390 0; loop:true; dur:15000; easing:linear;">
+              <a-box color="#8B4513" depth="0.1" width="0.5" height="1.5"></a-box>
+              <a-cylinder color="#D2691E" radius="0.05" height="0.8" position="0 -0.5 0"></a-cylinder>
+            </a-entity>
 
-          <a-entity gltf-model="url(assets/laptop.glb)" position="2 0 -6" rotation="0 -20 0" scale="0.4 0.4 0.4"
-                    animation="property:rotation; to:0 340 0; loop:true; dur:14000; easing:linear;"></a-entity>
+            <a-entity position="2 0 -6" rotation="0 -20 0" scale="0.8 0.8 0.8"
+                      animation="property:rotation; to:0 340 0; loop:true; dur:14000; easing:linear;">
+              <a-box color="#333" depth="0.05" width="1.2" height="0.7"></a-box>
+              <a-box color="#666" depth="0.02" width="1.1" height="0.6" position="0 0 0.03"></a-box>
+            </a-entity>
 
-          <!-- Texto guía -->
-          ${mode==='ar' ? `<a-text value="📌 Mueve tu celular para explorar tu portafolio en AR"
-                    position="0 0.3 -1.5" align="center" color="#FFD93D" width="3"></a-text>` : ''}
-        </a-entity>
-        <!-- Texto de crédito -->
-<a-text value="© 2025 - Creado por Angel Villon"
-        position="0 0.2 -2.5"
-        align="center"
-        color="#AAA"
-        width="6"></a-text>
-      `;
+            <!-- Texto guía -->
+            ${mode === 'ar' ? `
+            <a-text value="📌 Mueve tu celular para explorar tu portafolio en AR"
+                    position="0 0.3 -1.5" align="center" color="#FFD93D" width="3"></a-text>
+            ` : ''}
+          </a-entity>
+          
+          <!-- Texto de crédito -->
+          <a-text value="© 2025 - Creado por Angel Villon"
+                  position="0 0.2 -2.5"
+                  align="center"
+                  color="#AAA"
+                  width="6"></a-text>
+        `;
 
-      scene.innerHTML = content;
-      container.appendChild(scene);
-      scene.addEventListener('loaded', ()=>scene.play());
-      showBackButton();
-
+        scene.innerHTML = content;
+        container.appendChild(scene);
+        
+        scene.addEventListener('loaded', () => {
+          scene.play();
+          hideLoading();
+        });
+        
+        showBackButton();
+      }, 500); // Pequeño delay para que se vea el indicador de carga
     }
   </script>
-
 </body>
 </html>

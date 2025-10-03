@@ -3,26 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pikachu AR</title>
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <title>Pikachu Bailando AR</title>
+    <!-- Librería model-viewer -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   </head>
-  <body style="margin:0; overflow:hidden;">
-    <a-scene
-      embedded
-      vr-mode-ui="enabled: false"
-      xr-mode-ui="enabled: true"
-      webxr="optionalFeatures: hit-test;"
-      renderer="logarithmicDepthBuffer: true;"
-    >
-      <!-- Cámara -->
-      <a-camera position="0 1.6 0"></a-camera>
+  <body style="margin:0; background:#000; display:flex; justify-content:center; align-items:center; height:100vh;">
 
-      <!-- Pikachu (se carga desde assets/) -->
-      <a-entity
-        gltf-model="assets/pikachu.glb"
-        scale="0.5 0.5 0.5"
-        position="0 0 -2"
-      ></a-entity>
-    </a-scene>
+    <!-- Pikachu con AR -->
+    <model-viewer 
+      src="assets/pikachu.glb"
+      alt="Pikachu"
+      ar
+      ar-modes="scene-viewer quick-look webxr"
+      ar-button-style="icon"
+      auto-rotate
+      camera-controls
+      autoplay
+      animation-name="Dance"
+      style="width:100%; height:100vh;">
+    </model-viewer>
+
   </body>
 </html>
